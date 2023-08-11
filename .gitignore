@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+
+# Node.js generated files
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build/
+dist/
+
+# Dependency directories
+.pnp/
+.pnp.js
+
+# TypeScript output
+*.tsbuildinfo
+
+# Editor-specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+*#
+.sass-cache/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# Jest coverage reports
+coverage/
