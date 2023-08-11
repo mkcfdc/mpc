@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
 function LoginForm() {
-  const { loginWithRedirect } = useAuth0() ;
+  const { loginWithRedirect } = useAuth0();
 
   const handleLogin = () => {
     // Initiate the OAuth login flow provided by Auth0
