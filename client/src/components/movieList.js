@@ -21,7 +21,7 @@ function MovieList({ movies }) {
   const handleStreamClick = async (hash) => {
     setSelectedMovie(hash);
     try {
-      const response = await fetch(`https://api.moviepoopchute.lol/getStreamLink/${hash}`);
+      const response = await fetch(process.env.REACT_APP_BACKEND_API + `/getStreamLink/${hash}`);
       const data = await response.json();
       if (data.streamLink) {
         setStreamLink(data.streamLink);

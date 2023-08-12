@@ -1,4 +1,5 @@
 import express from 'express';
+import redis from 'ioredis';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -13,12 +14,49 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
+// Create a single Redis client instance
+const client = redis.createClient({
+  host: '127.0.0.1', // Redis server host
+  port: 6379,       // Redis server port
+});
+
+client.on('connect', function() {
+  console.log('Redis Connected!');
+});
+
+client.on('error', function(error) {
+  console.error('Error:', error);
+});
+
+client.on('ready', function() {
+  console.log('Redis server is ready.');
+});
+
+// Middleware to check Redis cache
+function checkRedisCache(key) {
+  return (req, res, next) => {
+    client.get(key, (err, reply) => {
+      if (err) {
+        console.error('Redis error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+      } else if (reply !== null) {
+        // Key exists, return its value
+        res.json(JSON.parse(reply)); // Parse JSON before sending
+      } else {
+        // Key doesn't exist
+        next(); // Proceed to the route handler
+      }
+    });
+  };
+}
+
 // Route to fetch account information
-app.get('/account/info', async (req, res) => {
+app.get('/account/info', checkRedisCache('accountInfo'), async (req, res) => {
   const premiumizeAPIKey = process.env.PREMIUMIZE_API_KEY;
 
   try {
     const accountInfo = await getAccountInfo(premiumizeAPIKey);
+    client.set('accountInfo', JSON.stringify(accountInfo), 'EX', 3600); // Cache account info
     res.json(accountInfo);
   } catch (error) {
     console.error('Error fetching account info:', error);
@@ -26,18 +64,19 @@ app.get('/account/info', async (req, res) => {
   }
 });
 
-// Define the route for getting the latest movies
-app.get('/latest', async (req, res) => {
+// Route to fetch latest movies with Redis caching
+app.get('/latest', checkRedisCache('latestMovies'), async (req, res) => {
   try {
-      const latestMovies = await getLatestMovies();
-      if (latestMovies) {
-        res.status(200).send(JSON.stringify(JSON.parse(latestMovies), null, 2));
-      } else {
-          res.status(404).json({ error: 'No latest movies found' });
-      }
+    const latestMovies = await getLatestMovies();
+    if (latestMovies) {
+      client.set('latestMovies', latestMovies, 'EX', 3600); // Cache latest movies
+      res.status(200).send(latestMovies);
+    } else {
+      res.status(404).json({ error: 'No latest movies found' });
+    }
   } catch (error) {
-      console.error('Error in /latest:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error('Error in /latest:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

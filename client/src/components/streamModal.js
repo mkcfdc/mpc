@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import ReactPlayer from 'react-player';
-import LazyLoad from 'react-lazyload';
 
 function StreamModal({ streamLink, onClose }) {
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -39,7 +38,7 @@ function StreamModal({ streamLink, onClose }) {
     >
       <div className="bg-white p-4 rounded-md shadow-lg">
         <div className="relative" onClick={handleVideoClick}>
-          <LazyLoad height={500} offset={100}>
+          
             <ReactPlayer
               url={streamLink}
               controls
@@ -49,7 +48,7 @@ function StreamModal({ streamLink, onClose }) {
               onFullScreenChange={handleFullScreenChange}
               className="rounded-md"
             />
-          </LazyLoad>
+        
         </div>
         <div className="mt-4 text-center">
           <button

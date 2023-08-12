@@ -12,7 +12,7 @@ function SearchForm({ onSearch, initialQuery }) {
     setError(null);
 
     try {
-      const response = await fetch(`https://api.moviepoopchute.lol/search/${query}`);
+      const response = await fetch(process.env.REACT_APP_BACKEND_API + `/search/${query}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }

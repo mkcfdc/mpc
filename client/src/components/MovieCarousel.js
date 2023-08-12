@@ -13,7 +13,7 @@ const MovieCarousel = () => {
   useEffect(() => {
     async function fetchLatestMovies() {
       try {
-        const response = await fetch('https://api.moviepoopchute.lol/latest');
+        const response = await fetch(process.env.REACT_APP_BACKEND_API + '/latest');
         if (!response.ok) {
           throw new Error('Failed to fetch latest movies');
         }
@@ -74,4 +74,4 @@ const MovieCarousel = () => {
   );
 };
 
-export default MovieCarousel;
+export default MovieCarousel; 

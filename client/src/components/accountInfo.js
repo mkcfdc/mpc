@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-function AccountInfo() {
+const AccountInfo = () => {
   const [accountInfo, setAccountInfo] = useState(null);
 
   useEffect(() => {
     async function fetchAccountInfo() {
       try {
-        const response = await fetch('https://api.moviepoopchute.lol/account/info'); // Assuming this route is exposed by your Express API
+        const response = await fetch(process.env.REACT_APP_BACKEND_API + '/account/info');
         const data = await response.json();
         setAccountInfo(data);
       } catch (error) {
@@ -20,7 +20,7 @@ function AccountInfo() {
   // Function to convert bytes to gigabytes
   const bytesToGigabytes = (bytes) => {
     const gigabytes = bytes / (1024 * 1024 * 1024);
-    return gigabytes.toFixed(2);
+    return gigabytes.toFixed(2); 
   };
 
   // Function to convert UNIX timestamp to human-readable date

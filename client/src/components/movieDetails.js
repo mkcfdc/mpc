@@ -16,7 +16,7 @@ const MovieDetails = () => {
   useEffect(() => {
     async function fetchMovieDetails() {
       try {
-        const response = await fetch(`https://api.moviepoopchute.lol/search/${imdbId}`);
+        const response = await fetch(process.env.REACT_APP_BACKEND_API + `/search/${imdbId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch movie details');
         }
@@ -34,7 +34,7 @@ const MovieDetails = () => {
 
   const handleStreamClick = async (hash) => {
     try {
-      const response = await fetch(`https://api.moviepoopchute.lol/getStreamLink/${hash}`);
+      const response = await fetch(process.env.REACT_APP_BACKEND_API + `/getStreamLink/${hash}`);
       const data = await response.json();
       if (data.streamLink) {
         setStreamLink(data.streamLink);
