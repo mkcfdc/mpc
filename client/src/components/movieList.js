@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom'; // Import Link
 import StreamModal from './streamModal';
+import DownloadModal from './downloadModal';
 
 function MovieList({ movies }) {
   const [showModal, setShowModal] = useState(false);
   const [streamLink, setStreamLink] = useState('');
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadInfo, setDownloadInfo] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
 
   const [expandedMovie, setExpandedMovie] = useState(null);
@@ -26,6 +29,15 @@ function MovieList({ movies }) {
       if (data.streamLink) {
         setStreamLink(data.streamLink);
         setShowModal(true);
+      } else if (data.status === 'success' && data.id) {
+        const transferId = data.id;
+        const transCheck = await fetch(process.env.REACT_APP_BACKEND_API + `/transfer/${transferId}`);
+        const tRes = await transCheck.json();
+        
+        if (tRes) {
+          setShowDownloadModal(true);
+          setDownloadInfo(tRes);
+        }
       }
     } catch (error) {
       console.error('Error fetching stream link:', error);
@@ -36,6 +48,8 @@ function MovieList({ movies }) {
     setShowModal(false);
     setStreamLink('');
     setSelectedMovie(null);
+    setDownloadInfo('');
+    setShowDownloadModal(false);
   };
 
   return (
@@ -119,6 +133,9 @@ function MovieList({ movies }) {
       ))}
       {showModal && selectedMovie && (
         <StreamModal streamLink={streamLink} onClose={handleCloseModal} />
+      )}
+      {showDownloadModal && (
+        <DownloadModal downloadInfo={downloadInfo} onClose={handleCloseModal} />
       )}
     </div>
   );
