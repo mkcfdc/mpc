@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import FormData from 'form-data';
 
 async function getAccountInfo(premiumizeAPIKey) {
   try {
@@ -81,21 +80,19 @@ async function directLink(magnetLink, apiKey) {
 }
 
 async function addToPremiumize(magnetLink, apiKey) {
-  const apiUrl = 'https://www.premiumize.me/api/transfer/create';
+  const url = 'https://www.premiumize.me/api/transfer/create';
   const headers = {
     'Authorization': `Bearer ${apiKey}`,
     'Accept': 'application/json',
-    'Content-Type': 'multipart/form-data'
+    'Content-Type': 'application/x-www-form-urlencoded'
   };
-
-  const form = new FormData();
-  form.append('src', magnetLink);
+  const data = `src=${encodeURIComponent(magnetLink)}`;
 
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: headers,
-      body: form
+      body: data
     });
 
     if (!response.ok) {
@@ -107,9 +104,32 @@ async function addToPremiumize(magnetLink, apiKey) {
   } catch (error) {
     throw error;
   }
+}
 
+async function checkTransferStatus(transferId, apiKey) {
+  const url = `https://www.premiumize.me/api/transfer/list?apikey=${apiKey}`;
+  const headers = {
+    'Accept': 'application/json'
+  };
+
+  try {
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    
+    // Find the transfer with the matching ID
+    const transfer = responseData.transfers.find(t => t.id === transferId);
+    
+    return transfer;
+  } catch (error) {
+    throw error;
+  }
 }
 
 
 
-export { checkCache, directLink, addToPremiumize, getAccountInfo };
+export { checkCache, directLink, addToPremiumize, checkTransferStatus, getAccountInfo };

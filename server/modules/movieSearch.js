@@ -1,5 +1,11 @@
 import fetch from 'node-fetch';
+import AWS from 'aws-sdk';
 import db from './db.js'; // Make sure you import your database module here
+
+// Configure AWS credentials and S3 bucket name
+AWS.config.update({ region: process.env.S3_REGION });
+const s3 = new AWS.S3();
+const bucketName = process.env.S3_BUCKET;
 
 async function getMovieImages(imdbId) {
     const [imageUrls, _] = await db.query(
@@ -17,7 +23,6 @@ async function getMovieImages(imdbId) {
         const moviesEndpoint = 'https://webservice.fanart.tv/v3/movies';
         const movieUrl = `${moviesEndpoint}/${imdbId}?api_key=${apiKey}`;
 
-        try {
             const response = await fetch(movieUrl);
             const movieData = await response.json();
 
@@ -35,22 +40,33 @@ async function getMovieImages(imdbId) {
             }
 
             if (backgroundUrl && posterUrl) {
-                await db.query(
-                    "INSERT IGNORE INTO image_urls (imdb_id, poster_url, background_url) VALUES (?, ?, ?)",
-                    [imdbId, posterUrl, backgroundUrl]
-                );
-
-                return {
-                    background_url: backgroundUrl,
-                    poster_url: posterUrl,
-                };
+                // Upload images to S3
+                const backgroundS3Key = `movies/${imdbId}/background.jpg`;
+                const posterS3Key = `movies/${imdbId}/poster.jpg`;
+        
+                try {
+                    await Promise.all([
+                        s3.putObject({ Bucket: bucketName, Key: backgroundS3Key, Body: await fetch(backgroundUrl).then(response => response.buffer()) }).promise(),
+                        s3.putObject({ Bucket: bucketName, Key: posterS3Key, Body: await fetch(posterUrl).then(response => response.buffer()) }).promise()
+                    ]);
+        
+                    // Update database with S3 URLs
+                    await db.query(
+                        "INSERT IGNORE INTO image_urls (imdb_id, poster_url, background_url) VALUES (?, ?, ?)",
+                        [imdbId, `https://${bucketName}.s3.amazonaws.com/${posterS3Key}`, `https://${bucketName}.s3.amazonaws.com/${backgroundS3Key}`]
+                    );
+        
+                    return {
+                        background_url: `https://${bucketName}.s3.amazonaws.com/${backgroundS3Key}`,
+                        poster_url: `https://${bucketName}.s3.amazonaws.com/${posterS3Key}`,
+                    };
+                } catch (error) {
+                    console.error('Error uploading images to S3 or updating database:', error);
+                    return null;
+                }
             } else {
                 return null;
             }
-        } catch (error) {
-            console.error('API request error:', error);
-            return null;
-        }
     }
 }
 

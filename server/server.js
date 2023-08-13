@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { checkCache, directLink, addToPremiumize, getAccountInfo } from './modules/premiumize.js';
+import { checkCache, directLink, addToPremiumize, getAccountInfo, checkTransferStatus } from './modules/premiumize.js';
 import { searchMovies, getLatestMovies } from './modules/movieSearch.js';
 
 const app = express();
@@ -133,7 +133,25 @@ app.get('/getStreamLink/:hash', async (req, res) => {
       console.error('Error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
-  });  
+  });
+
+  app.get('/transfer/status/:transferId/', async (req, res) => {
+    const { transferId } = req.params;
+    const apiKey = process.env.PREMIUMIZE_API_KEY;
+
+    if(!transferId){
+      res.status(400).json({error: 'No transfer ID given.'});
+    }
+
+    result = checkTransferStatus(transferId,apiKey);
+    
+    if(result){
+      res.status(300).send(result);
+    } else {
+      res.status(500).json({ error: 'Failed to get response.'});
+    }
+
+  });
  
 
 app.listen(port, () => {
