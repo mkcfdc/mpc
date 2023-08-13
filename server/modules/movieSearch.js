@@ -3,7 +3,11 @@ import AWS from 'aws-sdk';
 import db from './db.js'; // Make sure you import your database module here
 
 // Configure AWS credentials and S3 bucket name
-AWS.config.update({ region: process.env.S3_REGION });
+AWS.config.update({
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    region: process.env.S3_REGION
+  });
 const s3 = new AWS.S3();
 const bucketName = process.env.S3_BUCKET;
 
