@@ -56,8 +56,8 @@ app.get('/account/info', checkRedisCache('accountInfo'), async (req, res) => {
 
   try {
     const accountInfo = await getAccountInfo(premiumizeAPIKey);
-    client.set('accountInfo', JSON.stringify(accountInfo), 'EX', 3600); // Cache account info
-    res.json(accountInfo);
+    client.set('accountInfo', accountInfo, 'EX', 3600); // Cache account info
+    res.status(200).send(accountInfo);
   } catch (error) {
     console.error('Error fetching account info:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -124,7 +124,7 @@ app.get('/getStreamLink/:hash', async (req, res) => {
       } else {
         const addToPremiumizeResult = await addToPremiumize(magnetLink, premiumizeAPIKey);
         if (addToPremiumizeResult) {
-          res.status(200).json({ addToPremiumizeResult });
+          res.status(200).send(addToPremiumizeResult);
         } else {
           res.status(500).json({ error: 'Failed to add to Premiumize' });
         }

@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import FormData from 'form-data';
 
 async function getAccountInfo(premiumizeAPIKey) {
   try {
@@ -87,22 +88,26 @@ async function addToPremiumize(magnetLink, apiKey) {
     'Content-Type': 'multipart/form-data'
   };
 
-  const formData = new URLSearchParams();
-  formData.append('src', magnetLink);
+  const form = new FormData();
+  form.append('src', magnetLink);
 
   try {
-    const response = await fetch(apiUrl, {
+    const response = await fetch(url, {
       method: 'POST',
-      headers,
-      body: formData
+      headers: headers,
+      body: form
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
 
     const responseData = await response.json();
     return responseData;
   } catch (error) {
-    console.error('Error adding to Premiumize:', error);
-    return null;
+    throw error;
   }
+
 }
 
 
