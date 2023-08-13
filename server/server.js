@@ -56,8 +56,12 @@ app.get('/account/info', checkRedisCache('accountInfo'), async (req, res) => {
 
   try {
     const accountInfo = await getAccountInfo(premiumizeAPIKey);
-    client.set('accountInfo', accountInfo, 'EX', 3600); // Cache account info
-    res.status(200).send(accountInfo);
+    if (accountInfo) {
+      client.set('accountInfo', JSON.stringify(accountInfo), 'EX', 3600); // Cache account info
+      res.status(200).json(accountInfo);
+    } else {
+      res.status(404).json({ error: 'Account info not found' });
+    }
   } catch (error) {
     console.error('Error fetching account info:', error);
     res.status(500).json({ error: 'Internal server error' });
