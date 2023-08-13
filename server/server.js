@@ -16,7 +16,7 @@ app.use(cors());
 
 // Create a single Redis client instance
 const client = redis.createClient({
-  host: '127.0.0.1', // Redis server host
+  host: process.env.REDIS_HOST, // Redis server host
   port: 6379,       // Redis server port
 });
 

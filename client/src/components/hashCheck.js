@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import StreamModal from './streamModal';
 
-function hashCheck() {
+function HashCheck() {
   const [showStreamModal, setShowStreamModal] = useState(false);
+  const [streamLink, setStreamLink] = useState('');
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const hash = searchParams.get('hash');
@@ -40,4 +41,4 @@ function hashCheck() {
   );
 }
 
-export default hashCheck;
+export default HashCheck;
