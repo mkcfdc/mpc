@@ -41,8 +41,8 @@ async function getMovieImages(imdbId) {
 
             if (backgroundUrl && posterUrl) {
                 // Upload images to S3
-                const backgroundS3Key = `movies/${imdbId}/background.jpg`;
-                const posterS3Key = `movies/${imdbId}/poster.jpg`;
+                const backgroundS3Key = `cache/${imdbId}_moviebackground.jpg`;
+                const posterS3Key = `cache/${imdbId}_movieposter.jpg`;
         
                 try {
                     await Promise.all([
