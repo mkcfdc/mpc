@@ -41,7 +41,7 @@ function checkRedisCache(key) {
         res.status(500).json({ error: 'Internal Server Error' });
       } else if (reply !== null) {
         // Key exists, return its value
-        res.json(JSON.parse(reply)); // Parse JSON before sending
+        res.status(200).send(reply); // Parse JSON before sending
       } else {
         // Key doesn't exist
         next(); // Proceed to the route handler
@@ -143,7 +143,7 @@ app.get('/getStreamLink/:hash', async (req, res) => {
       res.status(400).json({error: 'No transfer ID given.'});
     }
 
-    result = checkTransferStatus(transferId,apiKey);
+    result = checkTransferStatus(transferId, apiKey);
     
     if(result){
       res.status(300).send(result);
