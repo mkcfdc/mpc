@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ProgressBar from './ProgressBar'; // Create a ProgressBar component
 
 const downloadModal = ({ transferId }) => {
@@ -20,6 +20,10 @@ const downloadModal = ({ transferId }) => {
 
   }, [transferId]);
 
+  const handleCloseModal = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   return (
     <div className="bg-white p-4 rounded shadow">
       <h2 className="text-lg font-semibold mb-2">Transfer Status</h2>
@@ -33,7 +37,14 @@ const downloadModal = ({ transferId }) => {
         </>
       ) : (
         <p>Loading transfer status...</p>
-      )}
+      )}<div>
+      <button
+            className="mt-2 ml-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            onClick={handleCloseModal}
+          >
+            Close
+          </button>
+          </div>
     </div>
   );
 };
