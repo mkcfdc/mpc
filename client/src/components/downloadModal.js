@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ProgressBar from './ProgressBar'; // Create a ProgressBar component
+import ProgressBar from './progressBar'; // Create a ProgressBar component
 
 const downloadModal = ({ transferId }) => {
   const [transferStatus, setTransferStatus] = useState(null);
