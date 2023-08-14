@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ProgressBar from './progressBar'; // Create a ProgressBar component
 
-const downloadModal = ({ transferId }) => {
+const DownloadModal = ({ transferId }) => {
   const [transferStatus, setTransferStatus] = useState(null);
 
   useEffect(() => {
@@ -49,4 +49,4 @@ const downloadModal = ({ transferId }) => {
   );
 };
 
-export default downloadModal;
+export default DownloadModal;
