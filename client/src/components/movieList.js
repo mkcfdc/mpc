@@ -31,7 +31,7 @@ function MovieList({ movies }) {
         setShowModal(true);
       } else if (data.status === 'success' && data.id) {
         const transferId = data.id;
-        const transCheck = await fetch(process.env.REACT_APP_BACKEND_API + `/transfer/${transferId}`);
+        const transCheck = await fetch(process.env.REACT_APP_BACKEND_API + `/transfer/status/${transferId}/`);
         const tRes = await transCheck.json();
         
         if (tRes) {

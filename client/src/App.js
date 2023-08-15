@@ -17,9 +17,9 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginForm />} />
         <Route path="/" element={<MainContent searchResults={searchResults} onSearch={handleSearch} />} /> {/* Use the updated MainContent component */}
-        <HashCheck />
         <Route path="/movie/:imdbId" element={<MovieDetails />} />
       </Routes>
+      <HashCheck />
     </div>
   );
 }

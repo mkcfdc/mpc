@@ -139,7 +139,7 @@ app.get('/getStreamLink/:hash', async (req, res) => {
     }
   });
 
-  app.get('/transfer/status/:transferId/', async (req, res) => {
+  app.get('/transfer/status/:transferId', async (req, res) => {
     const { transferId } = req.params;
     const apiKey = process.env.PREMIUMIZE_API_KEY;
 
