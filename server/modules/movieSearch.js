@@ -57,12 +57,12 @@ async function getMovieImages(imdbId) {
                     // Update database with S3 URLs
                     await db.query(
                         "INSERT IGNORE INTO image_urls (imdb_id, poster_url, background_url) VALUES (?, ?, ?)",
-                        [imdbId, `https://${bucketName}.s3.amazonaws.com/${posterS3Key}`, `https://${bucketName}.s3.amazonaws.com/${backgroundS3Key}`]
+                        [imdbId, `${process.env.CLOUDFRONT_URL}/${posterS3Key}`, `${process.env.CLOUDFRONT_URL}/${backgroundS3Key}`]
                     );
         
                     return {
-                        background_url: `https://${bucketName}.s3.amazonaws.com/${backgroundS3Key}`,
-                        poster_url: `https://${bucketName}.s3.amazonaws.com/${posterS3Key}`,
+                        background_url: `${process.env.CLOUDFRONT_URL}/${backgroundS3Key}`,
+                        poster_url: `${process.env.CLOUDFRONT_URL}/${posterS3Key}`,
                     };
                 } catch (error) {
                     console.error('Error uploading images to S3 or updating database:', error);
@@ -71,7 +71,7 @@ async function getMovieImages(imdbId) {
             } else {
                 return null;
             }
-    }
+    } 
 }
 
 async function searchMovies(query) {

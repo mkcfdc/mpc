@@ -58,22 +58,44 @@ const DownloadModal = ({ transferId, torrentHash, onClose }) => {
               <ProgressBar progress={transferStatus.progress * 100} />
 
               {/* Render StreamModal if showStreamModal is true */}
-              {streamLink && (
-                <div className="stream-now-container">
-                  <button
-                    className="stream-now-button bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 flex items-center"
-                    style={{ backgroundColor: 'rgb(0, 128, 0)' }}
-                    onClick={() =>  {
-                                      setShowStreamModal(true)
-                                      
-                                    }
-                                  }
 
-                  >
-                    <span className="mr-1">&#9658;</span> Stream
-                  </button>
-                </div>
-              )}
+      <div className="button-container">
+      <button
+        className="delete-button bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 flex items-center"
+        style={{ backgroundColor: 'rgb(139, 0, 0)' }}
+        onClick={async () => {
+          try {
+            const deleteResponse = await fetch(
+              process.env.REACT_APP_BACKEND_API + `/transfer/delete/${transferId}`
+            );
+            const deleteData = await deleteResponse.json();
+
+            if (deleteData.status === 'success') {
+              // Close the modal upon successful deletion
+              onClose();
+            } else {
+              console.error('Failed to delete transfer:', deleteData.error);
+            }
+          } catch (error) {
+            console.error('Error deleting transfer:', error);
+          }
+        }}
+      >
+        <span className="mr-1">&#10008;</span> Delete
+      </button>
+
+      {streamLink && (
+        <button
+          className="stream-now-button bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 flex items-center"
+          style={{ backgroundColor: 'rgb(0, 128, 0)' }}
+          onClick={() => {
+            setShowStreamModal(true);
+          }}
+        >
+          <span className="mr-1">&#9658;</span> Stream
+        </button>
+      )}
+    </div>
             </>
           ) : (
             <p>Loading transfer status...</p>

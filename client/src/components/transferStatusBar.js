@@ -19,7 +19,7 @@ const TransferStatusBar = () => {
 
   useEffect(() => {
     fetchTransferStatus();
-    const intervalId = setInterval(fetchTransferStatus, 60000); // Poll every 60 seconds
+    const intervalId = setInterval(fetchTransferStatus, 30000); // Poll every 60 seconds
     return () => clearInterval(intervalId); // Clean up the interval
   }, []);
 

@@ -129,6 +129,32 @@ async function checkTransferStatus(apiKey) {
   }
 }
 
+async function deleteTransfer(transferId, apiKey) {
+  const url = `https://www.premiumize.me/api/transfer/delete`;
+  const headers = {
+    'Authorization': `Bearer ${apiKey}`,
+    'Accept': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
 
+  const data = `id=${encodeURIComponent(transferId)}`;
 
-export { checkCache, directLink, addToPremiumize, checkTransferStatus, getAccountInfo };
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: data
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { checkCache, directLink, addToPremiumize, checkTransferStatus, getAccountInfo, deleteTransfer };

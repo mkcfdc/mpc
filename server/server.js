@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { checkCache, directLink, addToPremiumize, getAccountInfo, checkTransferStatus } from './modules/premiumize.js';
+import { checkCache, directLink, addToPremiumize, getAccountInfo, checkTransferStatus, deleteTransfer } from './modules/premiumize.js';
 import { searchMovies, getLatestMovies } from './modules/movieSearch.js';
 
 const app = express();
@@ -73,7 +73,7 @@ app.get('/latest', checkRedisCache('latestMovies'), async (req, res) => {
   try {
     const latestMovies = await getLatestMovies();
     if (latestMovies) {
-      client.set('latestMovies', latestMovies, 'EX', 3600); // Cache latest movies
+      client.set('latestMovies', latestMovies, 'EX', 3600); // Cache latest movies 1hr
       res.status(200).send(latestMovies);
     } else {
       res.status(404).json({ error: 'No latest movies found' });
@@ -107,37 +107,53 @@ app.get('/search/:query', async (req, res) => {
 
 
 app.get('/getStreamLink/:hash', async (req, res) => {
-    try {
-      const { hash } = req.params;
-      const premiumizeAPIKey = process.env.PREMIUMIZE_API_KEY; // Replace with your API key
-  
-      if (!hash) {
-        return res.status(400).json({ error: 'Hash is missing' });
-      }
-  
-      const magnetLink = `magnet:?xt=urn:btih:${hash}`;
+  try {
+    const { hash } = req.params;
+    const premiumizeAPIKey = process.env.PREMIUMIZE_API_KEY; // Replace with your API key
+
+    if (!hash) {
+      return res.status(400).json({ error: 'Hash is missing' });
+    }
+
+    const magnetLink = `magnet:?xt=urn:btih:${hash}`;
+    const cacheKey = `streamLink:${hash}`;
+
+    // Check if the stream link is already cached
+    const cachedStreamLink = await client.get(cacheKey);
+
+    if (cachedStreamLink) {
+      res.status(200).json({ streamLink: JSON.parse(cachedStreamLink) });
+      console.log('cache hit; streamLink');
+    } else {
       const cacheResult = await checkCache(magnetLink, premiumizeAPIKey);
-  
+
       if (cacheResult) {
         const streamLink = await directLink(magnetLink, premiumizeAPIKey);
         if (streamLink) {
+          // Cache the stream link
+          await client.set(cacheKey, JSON.stringify(streamLink));
+          await client.expire(cacheKey, 43200); // Set expiration time (in seconds), e.g., 12 hours
+
           res.status(200).json({ streamLink });
+          console.log('api hit; streamLink');
         } else {
           res.status(404).json({ error: 'Stream link not found' });
         }
       } else {
         const addToPremiumizeResult = await addToPremiumize(magnetLink, premiumizeAPIKey);
         if (addToPremiumizeResult) {
+          // cache the transferId here? No it's updated a lot from this point
           res.status(200).send(addToPremiumizeResult);
         } else {
           res.status(500).json({ error: 'Failed to add to Premiumize' });
         }
       }
-    } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ error: 'Internal server error' });
     }
-  });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
   app.get('/transfer/status/:transferId', async (req, res) => {
     const { transferId } = req.params;
@@ -146,6 +162,18 @@ app.get('/getStreamLink/:hash', async (req, res) => {
     if (transferId === 'all') {
       try {
         const result = await checkTransferStatus(apiKey);
+
+        if (result && result.transfers) {
+          for (const transfer of result.transfers) {
+            if (transfer.status === 'finished') {
+              const jsonData = JSON.stringify(transfer);
+              await client.set(`cachedTransfer:${transfer.id}`, jsonData);
+              await client.expire(`cachedTransfer:${transfer.id}`, 45000); // Set expiration time (in seconds), e.g., 1 hour
+            }
+          }
+        }
+  
+
         res.status(200).send(result);
       } catch (error) {
         res.status(500).json({ error: 'An error occurred.' });
@@ -158,19 +186,62 @@ app.get('/getStreamLink/:hash', async (req, res) => {
       return;
     }
   
+
     try {
-      const result = await checkTransferStatus(apiKey);
-      
-      if (result) {
-        const transfer = result.transfers.find(t => t.id === transferId);
-        res.status(200).send(transfer || {});
+      // Check if the data is already cached for the specific transferId
+      const cachedData = await client.get(`cachedTransfer:${transferId}`);
+    
+      if (cachedData) {
+        // If data is cached, send the cached data
+        console.log('Cache hit; transfer ');
+        res.status(200).send(JSON.parse(cachedData));
       } else {
-        res.status(500).json({ error: 'Failed to get response.' });
+        // If data is not cached, fetch it and cache it
+        const result = await checkTransferStatus(apiKey);
+    
+        if (result) {
+          const transfer = result.transfers.find(t => t.id === transferId);
+          if (transfer && transfer.status === 'finished') {
+            const jsonData = JSON.stringify(transfer);
+            await client.set(`cachedTransfer:${transferId}`, jsonData);
+            await client.expire(`cachedTransfer:${transferId}`, 3600); // Set expiration time (in seconds), e.g., 1 hour
+    
+            res.status(200).send(transfer);
+            console.log('api hit; transfer');
+          } else {
+            res.status(200).send(transfer || {});
+          }
+        } else {
+          res.status(500).json({ error: 'Failed to get response.' });
+        }
       }
     } catch (error) {
+      console.error('An error occurred:', error);
       res.status(500).json({ error: 'An error occurred.' });
+    } finally {
+      // Do not close the connection here to keep it open for future requests
     }
-  });  
+  });
+  
+  // Delete the transfer (transfer/delete)
+ app.get('/transfer/delete/:transferId', async (req, res) => {
+    const { transferId } = req.params;
+    const apiKey = process.env.PREMIUMIZE_API_KEY;
+  
+    if (transferId === 'undefined') {
+      return res.status(400).json({ error: 'No transfer ID given.' });
+    }
+    
+    const result = await deleteTransfer(transferId, apiKey);
+  
+    if (result) {
+      await client.del(`cachedTransfer:${transferId}`);
+      return res.status(200).send(result);
+    } else {
+      return res.status(500).json({ error: 'No response given' });
+    }
+  });
+  
  
 
 app.listen(port, () => {
