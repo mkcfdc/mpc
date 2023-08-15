@@ -106,9 +106,10 @@ async function addToPremiumize(magnetLink, apiKey) {
   }
 }
 
-async function checkTransferStatus(transferId, apiKey) {
-  const url = `https://www.premiumize.me/api/transfer/list?apikey=${apiKey}`;
+async function checkTransferStatus(apiKey) {
+  const url = `https://www.premiumize.me/api/transfer/list`;
   const headers = {
+    'Authorization': `Bearer ${apiKey}`,
     'Accept': 'application/json'
   };
 
@@ -121,10 +122,8 @@ async function checkTransferStatus(transferId, apiKey) {
 
     const responseData = await response.json();
     
-    // Find the transfer with the matching ID
-    const transfer = responseData.transfers.find(t => t.id === transferId);
     
-    return transfer;
+    return responseData;
   } catch (error) {
     throw error;
   }

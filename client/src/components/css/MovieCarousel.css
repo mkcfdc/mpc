@@ -1,0 +1,7 @@
+.carousel-overlay {
+    position: relative;
+    z-index: 1; /* Ensure the overlay is above the carousel */
+  }
+  
+  /* Add any other styles you need for the overlay */
+  

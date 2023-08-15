@@ -3,12 +3,18 @@ import { useParams, Link } from 'react-router-dom';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
 import { BsFillPlayFill } from 'react-icons/bs';
 import StreamModal from './streamModal';
+import DownloadModal from './downloadModal';
 import LogoArea from './logoArea';
 import LoadingScreen from './loadingScreen';
 
 const MovieDetails = () => {
   const { imdbId } = useParams();
   const [movieDetails, setMovieDetails] = useState(null);
+
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [transferId, setTransferId] = useState(false);
+  const [torrentHash, setTorrentHash] = useState(false);
+
   const [streamLink, setStreamLink] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +45,14 @@ const MovieDetails = () => {
       if (data.streamLink) {
         setStreamLink(data.streamLink);
         setShowModal(true);
+      } else if (data.status === 'success' && data.id) {
+        const tId = data.id;
+        console.log(tId);
+        
+          setShowDownloadModal(true);
+          setTransferId(tId);
+          setTorrentHash(hash);
+      
       }
     } catch (error) {
       console.error('Error fetching stream link:', error);
@@ -48,6 +62,8 @@ const MovieDetails = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setStreamLink('');
+    setTransferId('');
+    setShowDownloadModal(false);
   };
 
   if (!movieDetails) {
@@ -132,6 +148,9 @@ const MovieDetails = () => {
       </div>
       {showModal && (
         <StreamModal streamLink={streamLink} onClose={handleCloseModal} />
+      )}
+      {showDownloadModal && (
+        <DownloadModal transferId={transferId} torrentHash={torrentHash} onClose={handleCloseModal} />
       )}
     </div>
   );

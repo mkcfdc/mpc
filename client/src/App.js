@@ -4,6 +4,7 @@ import LoginForm from './components/LoginForm';
 import MainContent from './components/MainContent'; // Import the updated MainContent component
 import MovieDetails from './components/movieDetails';
 import HashCheck from './components/hashCheck';
+import TransferStatusBar from './components/transferStatusBar';
 
 function App() {
   const [searchResults, setSearchResults] = useState([]);
@@ -20,6 +21,7 @@ function App() {
         <Route path="/movie/:imdbId" element={<MovieDetails />} />
       </Routes>
       <HashCheck />
+      <TransferStatusBar />
     </div>
   );
 }

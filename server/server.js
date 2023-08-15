@@ -142,20 +142,35 @@ app.get('/getStreamLink/:hash', async (req, res) => {
   app.get('/transfer/status/:transferId', async (req, res) => {
     const { transferId } = req.params;
     const apiKey = process.env.PREMIUMIZE_API_KEY;
-
-    if(!transferId){
-      res.status(400).json({error: 'No transfer ID given.'});
+  
+    if (transferId === 'all') {
+      try {
+        const result = await checkTransferStatus(apiKey);
+        res.status(200).send(result);
+      } catch (error) {
+        res.status(500).json({ error: 'An error occurred.' });
+      }
+      return;
     }
-
-    result = checkTransferStatus(transferId, apiKey);
-    
-    if(result){
-      res.status(300).send(result);
-    } else {
-      res.status(500).json({ error: 'Failed to get response.'});
+  
+    if (transferId === 'undefined') {
+      res.status(400).json({ error: 'No transfer ID given.' });
+      return;
     }
-
-  });
+  
+    try {
+      const result = await checkTransferStatus(apiKey);
+      
+      if (result) {
+        const transfer = result.transfers.find(t => t.id === transferId);
+        res.status(200).send(transfer || {});
+      } else {
+        res.status(500).json({ error: 'Failed to get response.' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'An error occurred.' });
+    }
+  });  
  
 
 app.listen(port, () => {

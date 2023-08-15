@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link } from 'react-router-dom';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import MovieList from './movieList';
 import LoadingScreen from './loadingScreen';
+import './css/MovieCarousel.css'; // Import your custom CSS for the MovieCarousel
 
 const MovieCarousel = () => {
   const [latestMovies, setLatestMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to track modal open state
 
   useEffect(() => {
     async function fetchLatestMovies() {
@@ -22,7 +24,7 @@ const MovieCarousel = () => {
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching latest movies:', error);
-        setIsLoading(false); // Set loading to false even if there's an error
+        setIsLoading(false);
       }
     }
 
@@ -31,39 +33,40 @@ const MovieCarousel = () => {
 
   const handlePosterClick = (movie) => {
     setSelectedMovie(movie);
-  };
-
-  const handleSearch = (query) => {
-    // Here, you can use the logic to submit the search form with the provided query
-    console.log('Submitting search form with query:', query);
-
-    // For example, if you have a reference to the form element, you can do:
-    // formRef.current.submit();
+    setIsModalOpen(true); // Open modal when a movie poster is clicked
   };
 
   return (
     <div>
       <h2>Latest Movies</h2>
       {isLoading ? (
-        <LoadingScreen /> // Display LoadingScreen while loading
+        <LoadingScreen />
       ) : (
-        <Carousel showThumbs={false} infiniteLoop autoPlay>
-          {latestMovies.slice(0, 5).map((movie) => (
-            <div
-              key={movie.imdb}
-              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '350px' }}
-            >
-              <Link className="cursor-pointer" to={`/movie/${movie.imdb}`}>
-              <img
-                src={movie.poster}
-                alt={`${movie.title} Poster`}
-                className="carousel-poster rounded-md"
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-              />
-              </Link>
-            </div>
-          ))}
-        </Carousel>
+        <div className={isModalOpen ? 'carousel-overlay' : ''}>
+          <Carousel
+            showThumbs={false}
+            infiniteLoop
+            autoPlay
+            stopOnHover={!isModalOpen} // Stop autoplay on hover if modal is not open
+          >
+            {latestMovies.slice(0, 5).map((movie) => (
+              <div
+                key={movie.imdb}
+                style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '350px' }}
+              >
+                <Link className="cursor-pointer" to={`/movie/${movie.imdb}`}>
+                  <img
+                    src={movie.poster}
+                    alt={`${movie.title} Poster`}
+                    className="carousel-poster rounded-md"
+                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                    onClick={() => handlePosterClick(movie)} // Open modal on poster click
+                  />
+                </Link>
+              </div>
+            ))}
+          </Carousel>
+        </div>
       )}
       {selectedMovie && (
         <div className="selected-movie-details">
@@ -74,4 +77,4 @@ const MovieCarousel = () => {
   );
 };
 
-export default MovieCarousel; 
+export default MovieCarousel;
