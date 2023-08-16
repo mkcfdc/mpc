@@ -5,6 +5,7 @@ import MainContent from './components/MainContent'; // Import the updated MainCo
 import MovieDetails from './components/movieDetails';
 import HashCheck from './components/hashCheck';
 import TransferStatusBar from './components/transferStatusBar';
+import WatchedMoviesCarousel from './components/watchedMoviesCarousel';
 
 function App() {
   const [searchResults, setSearchResults] = useState([]);
@@ -21,6 +22,7 @@ function App() {
         <Route path="/movie/:imdbId" element={<MovieDetails />} />
       </Routes>
       <HashCheck />
+      <WatchedMoviesCarousel />
       <TransferStatusBar />
     </div>
   );

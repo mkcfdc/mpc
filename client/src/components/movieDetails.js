@@ -38,9 +38,9 @@ const MovieDetails = () => {
     fetchMovieDetails();
   }, [imdbId]);
 
-  const handleStreamClick = async (hash) => {
+  const handleStreamClick = async (hash, imdb) => {
     try {
-      const response = await fetch(process.env.REACT_APP_BACKEND_API + `/getStreamLink/${hash}`);
+      const response = await fetch(process.env.REACT_APP_BACKEND_API + `/getStreamLink/${hash}/${imdb}`);
       const data = await response.json();
       if (data.streamLink) {
         setStreamLink(data.streamLink);
@@ -130,7 +130,7 @@ const MovieDetails = () => {
                         <span className="text-gray-500">{torrent.size}</span>
                         <button
                           className="px-3 py-1 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 flex items-center space-x-1"
-                          onClick={() => handleStreamClick(torrent.hash)}
+                          onClick={() => handleStreamClick(torrent.hash, movieDetails.imdb)}
                         >
                           <BsFillPlayFill className="w-4 h-4" />
                           <span>Stream</span>

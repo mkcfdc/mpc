@@ -85,36 +85,78 @@ app.get('/latest', checkRedisCache('latestMovies'), async (req, res) => {
 });
 
 app.get('/search/:query', async (req, res) => {
-    const query = req.params.query;
+  const query = req.params.query;
 
-    if (query) {
-        try {
-            const results = await searchMovies(query);
-            if (results) {
-                // Send a pretty-printed JSON response with 2-space indentation
-                res.status(200).send(JSON.stringify(JSON.parse(results), null, 2));
-            } else {
-                res.status(404).json({ error: 'No movies found' });
-            }
-        } catch (error) {
-            console.error('Error in /search:', error);
-            res.status(500).json({ error: 'Internal server error.. probably database' });
-        }
-    } else {
-        res.status(400).json({ error: 'Missing query parameter' });
+  if (query) {
+      try {
+          const imdbIds = query.split(','); // Split the query by comma to get IMDb IDs
+          const results = await searchMovies(imdbIds);
+          
+          if (results.length > 0) {
+              // Send a pretty-printed JSON response with 2-space indentation
+              res.status(200).send(JSON.stringify(results, null, 2));
+          } else {
+              res.status(404).json({ error: 'No movies found' });
+          }
+      } catch (error) {
+          console.error('Error in /search:', error);
+          res.status(500).json({ error: 'Internal server error.. probably database' });
+      }
+  } else {
+      res.status(400).json({ error: 'Missing query parameter' });
+  }
+});
+
+app.get('/getWatchedMovies', async (req, res) => {
+  try {
+    // Retrieve the top 5 most watched movies from the sorted set
+    const topMovies = await client.zrevrange('topWatchedMovies', 0, 4, 'WITHSCORES');
+
+    // If there are no topMovies, return an empty JSON response
+    if (topMovies.length === 0) {
+      return res.status(200).json([]);
     }
+
+    // Extract the IMDb IDs from the sorted set result
+    const imdbList = topMovies.filter((_, index) => index % 2 === 0);
+
+    // Call the searchMovieInfo function with the array of IMDb IDs
+    const movieInfoList = await searchMovies(imdbList);
+
+    // Construct the response with movie information, view counts, and details
+    const formattedMovieList = imdbList.map((imdb, index) => ({
+      imdb,
+      count: parseInt(topMovies[index * 2 + 1]),
+      ...movieInfoList.find(movie => movie.imdb === imdb),
+    }));
+
+    res.status(200).json(formattedMovieList);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 
-app.get('/getStreamLink/:hash', async (req, res) => {
+
+app.get('/getStreamLink/:hash/:imdb?', async (req, res) => {
   try {
-    const { hash } = req.params;
+    const { hash, imdb } = req.params;
     const premiumizeAPIKey = process.env.PREMIUMIZE_API_KEY; // Replace with your API key
 
     if (!hash) {
       return res.status(400).json({ error: 'Hash is missing' });
     }
 
+    if (imdb) {
+      console.log(imdb);
+      // Increment the count for the movie's IMDb ID
+      const updatedCount = await client.zincrby('topWatchedMovies', 1, imdb);
+    
+      // Trim the sorted set to keep only the top 5 movies
+      await client.zremrangebyrank('topWatchedMovies', 0, -6);
+    }
+    
     const magnetLink = `magnet:?xt=urn:btih:${hash}`;
     const cacheKey = `streamLink:${hash}`;
 
@@ -142,7 +184,7 @@ app.get('/getStreamLink/:hash', async (req, res) => {
       } else {
         const addToPremiumizeResult = await addToPremiumize(magnetLink, premiumizeAPIKey);
         if (addToPremiumizeResult) {
-          // cache the transferId here? No it's updated a lot from this point
+          // Cache the transferId here? No it's updated a lot from this point
           res.status(200).send(addToPremiumizeResult);
         } else {
           res.status(500).json({ error: 'Failed to add to Premiumize' });
@@ -154,6 +196,7 @@ app.get('/getStreamLink/:hash', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
   app.get('/transfer/status/:transferId', async (req, res) => {
     const { transferId } = req.params;

@@ -22,10 +22,10 @@ function MovieList({ movies }) {
     }
   };
 
-  const handleStreamClick = async (hash) => {
+  const handleStreamClick = async (hash, imdb) => {
     setSelectedMovie(hash);
     try {
-      const response = await fetch(process.env.REACT_APP_BACKEND_API + `/getStreamLink/${hash}`);
+      const response = await fetch(process.env.REACT_APP_BACKEND_API + `/getStreamLink/${hash}/${imdb}`);
       const data = await response.json();
       console.log(data);
       if (data.streamLink) {
@@ -120,7 +120,7 @@ function MovieList({ movies }) {
                       <button
                     className="stream-now-button bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 flex items-center"
                     style={{ backgroundColor: 'rgb(0, 128, 0)' }}
-                    onClick={() => handleStreamClick(torrent.hash)} // Stream the first quality's link
+                    onClick={() => handleStreamClick(torrent.hash, movie.imdb)} // Stream the first quality's link
                   >
                     <span className="mr-1">&#9658;</span> Stream {quality}
                   </button>

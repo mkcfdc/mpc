@@ -74,17 +74,19 @@ async function getMovieImages(imdbId) {
     } 
 }
 
-async function searchMovies(query) {
-    const searchQuery = '%' + query + '%';
+async function searchMovies(queryList) {
+    const searchQuery = queryList.map(query => ['%' + query + '%', '%' + query + '%']).flat();
+
+    const queryPlaceholders = Array(queryList.length).fill('(m.title LIKE ? OR m.imdb_id LIKE ?)').join(' OR ');
 
     const [movies, _] = await db.query(
-        "SELECT m.*, i.poster_url AS cached_poster_url, i.background_url AS cached_background_url \
-        FROM movies m \
-        LEFT JOIN image_urls i ON m.imdb_id = i.imdb_id \
-        WHERE m.title LIKE ? OR m.imdb_id LIKE ? \
-        ORDER BY m.id DESC \
-        LIMIT 10",
-        [searchQuery, searchQuery]
+        `SELECT m.*, i.poster_url AS cached_poster_url, i.background_url AS cached_background_url
+        FROM movies m
+        LEFT JOIN image_urls i ON m.imdb_id = i.imdb_id
+        WHERE ${queryPlaceholders}
+        ORDER BY m.id DESC
+        LIMIT 10`,
+        searchQuery
     );
 
     if (movies.length > 0) {
@@ -110,9 +112,9 @@ async function searchMovies(query) {
             };
         }));
 
-        return JSON.stringify(alignedMovies, null, 2);
+        return alignedMovies;
     } else {
-        return null;
+        return [];
     }
 }
 
