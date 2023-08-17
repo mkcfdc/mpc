@@ -127,7 +127,7 @@ app.get('/getWatchedMovies', async (req, res) => {
     const formattedMovieList = imdbList.map((imdb, index) => ({
       ...movieInfoList.find(movie => movie.imdb === imdb),
     })).filter(movie => movie.imdb);
-    
+
     res.status(200).json(formattedMovieList);
   } catch (error) {
     console.error('Error:', error);
