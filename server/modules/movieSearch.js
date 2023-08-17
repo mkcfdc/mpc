@@ -118,9 +118,39 @@ async function searchMovies(queryList) {
     }
 }
 
+async function getTopMovies(queryList) {
+    const searchQuery = queryList.map(query => ['%' + query + '%', '%' + query + '%']).flat();
+
+    const queryPlaceholders = Array(queryList.length).fill('(m.imdb_id LIKE ?)').join(' OR ');
+
+    const [movies, _] = await db.query(
+        `SELECT m.imdb_id, m.poster, i.poster_url AS cached_poster_url, i.background_url AS cached_background_url
+        FROM movies m
+        LEFT JOIN image_urls i ON m.imdb_id = i.imdb_id
+        WHERE ${queryPlaceholders}
+        ORDER BY m.id DESC
+        LIMIT 10`,
+        searchQuery
+    );
+
+    if (movies.length > 0) {
+        const alignedMovies = await Promise.all(movies.map(async movie => {
+
+            return {
+                imdb: movie.imdb_id,
+                poster: movie.cached_poster_url || movie.poster,
+            };
+        }));
+
+        return alignedMovies;
+    } else {
+        return [];
+    }
+}
+
 async function getLatestMovies() {
     const [latestMovies, _] = await db.query(
-        "SELECT m.*, i.poster_url AS cached_poster_url, i.background_url AS cached_background_url \
+        "SELECT m.title, m.year, m.imdb_id, m.poster, i.poster_url AS cached_poster_url, i.background_url AS cached_background_url \
         FROM movies m \
         LEFT JOIN image_urls i ON m.imdb_id = i.imdb_id \
         ORDER BY m.id DESC \
@@ -144,7 +174,7 @@ async function getLatestMovies() {
                 title: movie.title,
                 year: movie.year,
                 imdb: movie.imdb_id,
-                torrents: JSON.parse(movie.torrents),
+             // torrents: JSON.parse(movie.torrents),
                 poster: posterUrl || movie.poster,
             };
         }));
@@ -156,4 +186,4 @@ async function getLatestMovies() {
 }
 
 
-export { searchMovies, getLatestMovies };
+export { searchMovies, getLatestMovies, getTopMovies };

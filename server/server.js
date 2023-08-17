@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { checkCache, directLink, addToPremiumize, getAccountInfo, checkTransferStatus, deleteTransfer } from './modules/premiumize.js';
-import { searchMovies, getLatestMovies } from './modules/movieSearch.js';
+import { searchMovies, getTopMovies, getLatestMovies } from './modules/movieSearch.js';
 
 const app = express();
 const port = process.env.PORT;
@@ -121,15 +121,13 @@ app.get('/getWatchedMovies', async (req, res) => {
     const imdbList = topMovies.filter((_, index) => index % 2 === 0);
 
     // Call the searchMovieInfo function with the array of IMDb IDs
-    const movieInfoList = await searchMovies(imdbList);
+    const movieInfoList = await getTopMovies(imdbList);
 
     // Construct the response with movie information, view counts, and details
     const formattedMovieList = imdbList.map((imdb, index) => ({
-      imdb,
-      count: parseInt(topMovies[index * 2 + 1]),
       ...movieInfoList.find(movie => movie.imdb === imdb),
-    }));
-
+    })).filter(movie => movie.imdb);
+    
     res.status(200).json(formattedMovieList);
   } catch (error) {
     console.error('Error:', error);
