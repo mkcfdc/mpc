@@ -147,15 +147,6 @@ app.get('/getStreamLink/:hash/:imdb?', async (req, res) => {
     if (!hash) {
       return res.status(400).json({ error: 'Hash is missing' });
     }
-
-    if (imdb) {
-      console.log(imdb);
-      // Increment the count for the movie's IMDb ID
-      const updatedCount = await client.zincrby('topWatchedMovies', 1, imdb);
-    
-      // Trim the sorted set to keep only the top 5 movies
-      await client.zremrangebyrank('topWatchedMovies', 0, -6);
-    }
     
     const magnetLink = `magnet:?xt=urn:btih:${hash}`;
     const cacheKey = `streamLink:${hash}`;
@@ -166,6 +157,16 @@ app.get('/getStreamLink/:hash/:imdb?', async (req, res) => {
     if (cachedStreamLink) {
       res.status(200).json({ streamLink: JSON.parse(cachedStreamLink) });
       console.log('cache hit; streamLink');
+
+      if (imdb) {
+        console.log(imdb);
+        // Increment the count for the movie's IMDb ID
+        await client.zincrby('topWatchedMovies', 1, imdb);
+      
+        // Trim the sorted set to keep only the top 5 movies
+        await client.zremrangebyrank('topWatchedMovies', 0, -6);
+      }
+
     } else {
       const cacheResult = await checkCache(magnetLink, premiumizeAPIKey);
 
@@ -175,6 +176,15 @@ app.get('/getStreamLink/:hash/:imdb?', async (req, res) => {
           // Cache the stream link
           await client.set(cacheKey, JSON.stringify(streamLink));
           await client.expire(cacheKey, 43200); // Set expiration time (in seconds), e.g., 12 hours
+
+          if (imdb) {
+            console.log(imdb);
+            // Increment the count for the movie's IMDb ID
+            await client.zincrby('topWatchedMovies', 1, imdb);
+          
+            // Trim the sorted set to keep only the top 5 movies
+            await client.zremrangebyrank('topWatchedMovies', 0, -6);
+          }
 
           res.status(200).json({ streamLink });
           console.log('api hit; streamLink');
