@@ -1,0 +1,15 @@
+/* Define the animation with the calculated widthPercentage */
+@keyframes progressBarAnimation {
+    0% {
+      width: 0;
+    }
+    100% {
+      width: var(--width-percentage, 0%);
+    }
+  }
+  
+  /* Apply the animation to the filled part of the progress bar */
+  .filled-progress {
+    animation: progressBarAnimation 0.5s ease-in-out;
+  }
+  

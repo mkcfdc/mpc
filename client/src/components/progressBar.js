@@ -1,4 +1,5 @@
 import React from 'react';
+import './css/progressBar.css';
 
 const ProgressBar = ({ progress }) => {
   return (
@@ -15,11 +16,13 @@ const ProgressBar = ({ progress }) => {
           </span>
         </div>
       </div>
-      <div className="flex rounded bg-gray-200">
-        <div
-          style={{ width: `${progress}%` }}
-          className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500"
-        ></div>
+      <div className="filled-progress flex rounded bg-gray-200">
+      <div
+      style={{ width: `${progress.toFixed(2)}%` }}
+      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500"
+      >
+
+      </div>
       </div>
     </div>
   );
