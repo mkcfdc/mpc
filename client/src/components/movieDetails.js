@@ -6,6 +6,7 @@ import StreamModal from './streamModal';
 import DownloadModal from './downloadModal';
 import LogoArea from './logoArea';
 import LoadingScreen from './loadingScreen';
+import { useAuth0 } from '@auth0/auth0-react';
 
 const MovieDetails = () => {
   const { imdbId } = useParams();
@@ -18,6 +19,8 @@ const MovieDetails = () => {
   const [streamLink, setStreamLink] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { isAuthenticated } = useAuth0(); // Extract isAuthenticated property
 
   useEffect(() => {
     async function fetchMovieDetails() {
@@ -65,6 +68,18 @@ const MovieDetails = () => {
     setTransferId('');
     setShowDownloadModal(false);
   };
+
+  if (!isAuthenticated) {
+    // Redirect to the login page or display a message
+    //history.push('/login'); // You can replace '/login' with the actual login route
+    // Alternatively, you can display a message:
+     return (
+       <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+         <p>You must be logged in to view this page.</p>
+       </div>
+     );
+  }
+
 
   if (!movieDetails) {
     return (
