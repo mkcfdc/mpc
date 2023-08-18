@@ -4,7 +4,6 @@ import MainContent from './components/MainContent'; // Import the updated MainCo
 import MovieDetails from './components/movieDetails';
 import HashCheck from './components/hashCheck';
 import TransferStatusBar from './components/transferStatusBar';
-import WatchedMoviesCarousel from './components/watchedMoviesCarousel';
 
 import AuthBar from './auth/AuthBar';
 
@@ -23,7 +22,6 @@ function App() {
         <Route path="/movie/:imdbId" element={<MovieDetails />} />
       </Routes>
       <HashCheck />
-      <WatchedMoviesCarousel />
       <TransferStatusBar />
     </div>
   );

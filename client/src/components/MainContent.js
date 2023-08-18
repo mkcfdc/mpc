@@ -4,6 +4,8 @@ import AccountInfo from './accountInfo';
 import LogoArea from './logoArea';
 import MovieList from './movieList';
 import MovieCarousel from './MovieCarousel';
+import WatchedMoviesCarousel from './watchedMoviesCarousel'; // Make sure the import path is correct
+
 import { useAuth0 } from '@auth0/auth0-react';
 
 function MainContent({ searchResults, onSearch }) {
@@ -13,7 +15,7 @@ function MainContent({ searchResults, onSearch }) {
     <div>
       <LogoArea />
 
-      {isAuthenticated && (
+      {isAuthenticated ? (
         <>
           <MovieCarousel />
           <div className="grid gap-6">
@@ -22,17 +24,18 @@ function MainContent({ searchResults, onSearch }) {
               {(searchResults ?? []).length > 0 ? (
                 <MovieList movies={searchResults} />
               ) : (
-                <AccountInfo />
+                <>
+                  <AccountInfo />
+                  <WatchedMoviesCarousel />
+                </>
               )}
             </div>
           </div>
         </>
-      )}
-
-      {!isAuthenticated && (
-         <div className="bg-red-100 text-red-800 p-4 rounded-md">
-         <p>You must be logged in to use these features!</p>
-       </div>
+      ) : (
+        <div className="bg-red-100 text-red-800 p-4 rounded-md">
+          <p>You must be logged in to use these features!</p>
+        </div>
       )}
     </div>
   );
