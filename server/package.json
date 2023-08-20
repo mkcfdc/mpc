@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "homepage": "https://api.moviepoopchute.lol",
+  "homepage": "https://api.mpc.lol",
   "type": "module",
   "main": "server.js",
   "scripts": {
