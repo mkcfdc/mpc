@@ -7,6 +7,7 @@ import MovieCarousel from './MovieCarousel';
 import WatchedMoviesCarousel from './watchedMoviesCarousel'; // Make sure the import path is correct
 
 import { useAuth0 } from '@auth0/auth0-react';
+import TransferStatusBar from './transferStatusBar';
 
 function MainContent({ searchResults, onSearch }) {
   const { isAuthenticated } = useAuth0(); // Extract isAuthenticated property
@@ -30,6 +31,7 @@ function MainContent({ searchResults, onSearch }) {
                 </>
               )}
             </div>
+            <TransferStatusBar />
           </div>
         </>
       ) : (

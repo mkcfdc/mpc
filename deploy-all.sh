@@ -1,0 +1,1 @@
+tailscale ssh frontend -c 'bash deploy.sh'

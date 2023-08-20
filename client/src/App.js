@@ -3,7 +3,6 @@ import { Route, Routes } from 'react-router-dom';
 import MainContent from './components/MainContent'; // Import the updated MainContent component
 import MovieDetails from './components/movieDetails';
 import HashCheck from './components/hashCheck';
-import TransferStatusBar from './components/transferStatusBar';
 
 import AuthBar from './auth/AuthBar';
 
@@ -22,7 +21,6 @@ function App() {
         <Route path="/movie/:imdbId" element={<MovieDetails />} />
       </Routes>
       <HashCheck />
-      <TransferStatusBar />
     </div>
   );
 }
