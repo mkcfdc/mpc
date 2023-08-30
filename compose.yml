@@ -1,7 +1,9 @@
 version: "3"
 services:
   node-app:
-    build: .
+    build:
+      context: ./server   # Path to your Node.js backend directory
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     depends_on:
@@ -14,3 +16,13 @@ services:
       MYSQL_DATABASE: your_database_name
   redis:
     image: redis:latest
+  react-app:
+    build:
+      context: ./client   # Path to your React frontend directory
+      dockerfile: Dockerfile
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf   # Mount your Nginx configuration
